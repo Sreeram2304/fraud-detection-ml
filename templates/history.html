@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prediction History – FraudGuard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="nav-brand">🛡️ FraudGuard</span>
+    <a href="/" class="nav-link">← New Prediction</a>
+  </nav>
+
+  <main class="container">
+    <header class="page-header">
+      <h1>Prediction History</h1>
+      <p class="subtitle">Last 20 transactions analysed.</p>
+    </header>
+
+    {% if rows %}
+    <div class="card table-card">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date &amp; Time</th>
+            <th>Amount ($)</th>
+            <th>Time (s)</th>
+            <th>Result</th>
+            <th>Confidence</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr class="{{ 'row-fraud' if row.result == 'Fraud' else 'row-safe' }}">
+            <td class="td-id">{{ row.id }}</td>
+            <td>{{ row.created_at or '—' }}</td>
+            <td>${{ "%.2f"|format(row.amount) }}</td>
+            <td>{{ row.time_val | int }}</td>
+            <td>
+              <span class="badge {{ 'badge-fraud' if row.result == 'Fraud' else 'badge-safe' }}">
+                {{ '🚨' if row.result == 'Fraud' else '✅' }} {{ row.result }}
+              </span>
+            </td>
+            <td>
+              {% if row.confidence is not none %}
+                <div class="mini-bar-wrap">
+                  <div
+                    class="mini-bar {{ 'bar-fraud' if row.result == 'Fraud' else 'bar-safe' }}"
+                    style="width: {{ row.confidence }}%"
+                  ></div>
+                </div>
+                <span class="conf-text">{{ row.confidence }}%</span>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="card empty-state">
+      <div class="empty-icon">📭</div>
+      <p>No predictions yet. <a href="/">Analyse a transaction</a> to get started.</p>
+    </div>
+    {% endif %}
+  </main>
+
+  <footer class="footer">
+    <p>For demo purposes only. Model trained on synthetic data.</p>
+  </footer>
+</body>
+</html>
